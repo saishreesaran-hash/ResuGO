@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResuGO â€” Premium AI Resume Intelligence Dashboard</title>
+  
+  <!-- Font Links -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- GSAP CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel CDN for JSX Parsing -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg: '#09090B',
+            cardBg: 'rgba(255, 255, 255, 0.04)',
+            cardBorder: 'rgba(255, 255, 255, 0.08)',
+            primary: '#5B5FEF',
+            secondary: '#00D4FF',
+            accent: '#22D3EE',
+            success: '#22C55E',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            grotesk: ['Space Grotesk', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Custom Styles (Mesh Gradients, Glassmorphism, Wave Animations) -->
+  <style>
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOKENS & UTILITIES â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    :root {
+      --glow-indigo: rgba(91, 95, 239, 0.15);
+      --glow-cyan: rgba(34, 211, 238, 0.15);
+    }
+
+    body {
+      background-color: #09090B;
+      color: #F1F5F9;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+
+    /* Light theme overrides */
+    body.light-theme {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    body.light-theme .bg-grid {
+      background-color: #f8fafc !important;
+      background-image: linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+    }
+    body.light-theme .orb-glow { opacity: 0.11; mix-blend-mode: multiply; }
+    body.light-theme .glass-card {
+      background: rgba(255, 255, 255, 0.82);
+      border-color: rgba(15, 23, 42, 0.12);
+      box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.28);
+    }
+    body.light-theme aside,
+    body.light-theme header {
+      background: rgba(255, 255, 255, 0.82) !important;
+      border-color: rgba(15, 23, 42, 0.12) !important;
+    }
+    body.light-theme [class*="bg-black"] { background-color: rgba(241, 245, 249, 0.82) !important; }
+    body.light-theme [class*="bg-[#09090B]"] { background-color: rgba(248, 250, 252, 0.86) !important; }
+    body.light-theme .text-slate-100,
+    body.light-theme .text-slate-200 { color: #0f172a !important; }
+    body.light-theme .text-slate-300 { color: #334155 !important; }
+    body.light-theme .text-slate-400,
+    body.light-theme .text-slate-500 { color: #475569 !important; }
+    body.light-theme .border-cardBorder { border-color: rgba(15, 23, 42, 0.13) !important; }
+    /* Animated Mesh Background */
+    .bg-grid {
+      background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .orb-glow {
+      filter: blur(140px);
+      opacity: 0.22;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.035);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7),
+                  0 0 20px 0px rgba(91, 95, 239, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* Water Wave Animations */
+    .water-wave-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 50%;
+    }
+
+    .water-wave-beaker {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px 8px 16px 16px;
+    }
+
+    .water-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(180deg, #22D3EE 0%, #5B5FEF 100%);
+      transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .water-wave {
+      position: absolute;
+      left: 0;
+      width: 200%;
+      height: 24px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V0C26.9,8.75,55.05,17,83.66,23.83,149.77,39.69,219.08,45.48,287,38.86,298.54,37.74,310.06,37.19,321.39,56.44Z' fill='%2322D3EE'/%3E%3C/svg%3E") repeat-x;
+      background-size: 50% 100%;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .water-wave-1 {
+      top: -18px;
+      animation: wave-move 4s linear infinite;
+      opacity: 0.85;
+    }
+
+    .water-wave-2 {
+      top: -15px;
+      animation: wave-move-reverse 6s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes wave-move {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes wave-move-reverse {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Pipeline Fluid Wave Path */
+    .pipe-fluid {
+      background: linear-gradient(90deg, rgba(34, 211, 238, 0.4) 0%, rgba(91, 95, 239, 0.4) 100%);
+      background-size: 200% 100%;
+      animation: pipe-flow 3s linear infinite;
+    }
+
+    @keyframes pipe-flow {
+      0% { background-position: 100% 0%; }
+      100% { background-position: 0% 0%; }
+    }
+
+    /* Confetti Particle Effect */
+    .confetti-particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: fall 1.8s ease-out forwards;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-20px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(220px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Theme Switches */
+    .dark-shadow-glow {
+      box-shadow: 0 0 20px 2px rgba(91, 95, 239, 0.18);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090B;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-bg text-slate-100 overflow-y-auto selection:bg-primary/30 selection:text-white">
+
+  <!-- React root container -->
+  <div id="root"></div>
+
+  <!-- App Main Logic (React, GSAP, SVG Layouts) -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN COMPONENT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    function App() {
+      const [isIntroComplete, setIsIntroComplete] = useState(false);
+      const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+      const [activeTab, setActiveTab] = useState('Dashboard');
+      const [isDarkTheme, setIsDarkTheme] = useState(() => localStorage.getItem('resugo-theme') !== 'light');
+
+      // Scanning Pipeline States
+      const [scanProgress, setScanProgress] = useState(0); // 0 = idle, 1 = scanning, 2 = complete
+      const [activeStation, setActiveStation] = useState(-1);
+      const [finalScore, setFinalScore] = useState(0);
+      const [analysisResult, setAnalysisResult] = useState(null);
+      const [confetti, setConfetti] = useState([]);
+      const [dragging, setDragging] = useState(false);
+      const [uploadedFileName, setUploadedFileName] = useState('');
+      const [uploadedJobFileName, setUploadedJobFileName] = useState('');
+      const [resumeText, setResumeText] = useState('');
+      const [jobDescription, setJobDescription] = useState('');
+      const [matchedSkills, setMatchedSkills] = useState([]);
+      const [missingSkills, setMissingSkills] = useState([]);
+      const [selectedSkill, setSelectedSkill] = useState('');
+      const [isGuest, setIsGuest] = useState(false);
+      const [toast, setToast] = useState('');
+      const hasResume = Boolean(resumeText.trim());
+      const [projectTitle, setProjectTitle] = useState('ResuGO AI Resume Intelligence');
+      const [projectTech, setProjectTech] = useState('React, JavaScript, Python, FastAPI, Gemini, Git');
+      const [jobMatches, setJobMatches] = useState(null);
+      const [isJobMatching, setIsJobMatching] = useState(false);
+      const hasCompletedAnalysis = analysisResult !== null;
+      const displayedScore = analysisResult?.matchPercentage ?? 0;
+      const atsScore = hasCompletedAnalysis ? Math.max(0, displayedScore - 8) : null;
+      const totalTargetSkills = matchedSkills.length + missingSkills.length;
+      const skillCoverage = hasCompletedAnalysis && totalTargetSkills ? Math.round((matchedSkills.length / totalTargetSkills) * 100) : 0;
+      const resumeBreadth = hasCompletedAnalysis ? Math.min(100, matchedSkills.length * 18) : 0;
+      const radarValues = hasCompletedAnalysis ? [displayedScore, atsScore, skillCoverage, resumeBreadth, Math.max(0, displayedScore - missingSkills.length * 4)] : [0, 0, 0, 0, 0];
+      const getRadarPoints = (values) => values.map((value, index) => {
+        const angle = -Math.PI / 2 + index * (2 * Math.PI / values.length);
+        const radius = 80 * (value / 100);
+        return `${(100 + Math.cos(angle) * radius).toFixed(1)},${(100 + Math.sin(angle) * radius).toFixed(1)}`;
+      }).join(' ');
+      const radarPoints = getRadarPoints(radarValues);
+      const targetRadarPoints = getRadarPoints([100, 100, 100, 100, 100]);
+      const performanceValues = hasCompletedAnalysis ? [Math.max(0, displayedScore - 36), Math.max(0, displayedScore - 22), Math.max(0, displayedScore - 10), displayedScore] : [];
+      const performanceLinePoints = performanceValues.map((value, index) => `${(index * 400 / 3).toFixed(1)},${(190 - value * 1.65).toFixed(1)}`).join(' ');
+
+      // â”€â”€ Skill & Resource Knowledge Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      const SKILL_DB = [
+        { skill: 'React', aliases: ['reactjs', 'react.js', 'react 18'] },
+        { skill: 'Vue.js', aliases: ['vue', 'vuejs', 'vue 3'] },
+        { skill: 'Angular', aliases: ['angular', 'angularjs'] },
+        { skill: 'TypeScript', aliases: ['typescript', 'ts'] },
+        { skill: 'JavaScript', aliases: ['javascript', 'js', 'es6', 'ecmascript'] },
+        { skill: 'Node.js', aliases: ['node', 'nodejs', 'node.js'] },
+        { skill: 'Python', aliases: ['python', 'python3'] },
+        { skill: 'FastAPI', aliases: ['fastapi', 'fast api'] },
+        { skill: 'Django', aliases: ['django'] },
+        { skill: 'Flask', aliases: ['flask'] },
+        { skill: 'SQL', aliases: ['sql', 'mysql', 'postgresql', 'postgres', 'sqlite'] },
+        { skill: 'MongoDB', aliases: ['mongodb', 'mongo'] },
+        { skill: 'Docker', aliases: ['docker', 'dockerfile', 'containerization'] },
+        { skill: 'Kubernetes', aliases: ['kubernetes', 'k8s', 'kubectl'] },
+        { skill: 'AWS', aliases: ['aws', 'amazon web services', 's3', 'ec2', 'lambda'] },
+        { skill: 'GCP', aliases: ['gcp', 'google cloud', 'cloud run', 'firebase'] },
+        { skill: 'Azure', aliases: ['azure', 'microsoft azure'] },
+        { skill: 'Git', aliases: ['git', 'github', 'gitlab', 'version control'] },
+        { skill: 'GraphQL', aliases: ['graphql'] },
+        { skill: 'REST APIs', aliases: ['rest', 'rest api', 'restful', 'api'] },
+        { skill: 'Tailwind CSS', aliases: ['tailwind', 'tailwindcss'] },
+        { skill: 'Next.js', aliases: ['nextjs', 'next.js', 'next js'] },
+        { skill: 'Machine Learning', aliases: ['ml', 'machine learning', 'scikit-learn', 'sklearn'] },
+        { skill: 'TensorFlow', aliases: ['tensorflow', 'tf'] },
+        { skill: 'PyTorch', aliases: ['pytorch', 'torch'] },
+        { skill: 'Redis', aliases: ['redis', 'cache'] },
+        { skill: 'Linux', aliases: ['linux', 'unix', 'bash', 'shell scripting'] },
+        { skill: 'Figma', aliases: ['figma', 'ui design', 'ux design', 'ui/ux'] },
+        { skill: 'CI/CD', aliases: ['ci/cd', 'cicd', 'github actions', 'jenkins', 'devops pipeline'] },
+        { skill: 'Microservices', aliases: ['microservices', 'microservice architecture'] },
+        { skill: 'Arduino', aliases: ['arduino', 'arduino ide'] },
+        { skill: 'Microcontrollers', aliases: ['microcontroller', 'microcontrollers', 'esp32', 'esp8266', 'stm32', 'raspberry pi pico'] },
+        { skill: 'Embedded Systems', aliases: ['embedded systems', 'embedded system', 'embedded'] },
+        { skill: 'Firmware Engineering', aliases: ['firmware engineering', 'firmware development', 'firmware'] },
+        { skill: 'Internet of Things (IoT)', aliases: ['internet of things', 'iot', 'smart devices', 'smart home'] },
+        { skill: 'Robotics', aliases: ['robotics', 'robot', 'rover', 'autonomous vehicle'] },
+        { skill: 'Circuit Simulation', aliases: ['circuit simulation', 'wokwi', 'tinkercad', 'tinkercad circuits'] },
+        { skill: 'Sensors', aliases: ['sensor', 'sensors', 'ultrasonic', 'temperature sensor', 'motion sensor'] },
+        { skill: 'Relays & Actuators', aliases: ['relay', 'relays', 'actuator', 'actuators', 'servo motor'] },
+        { skill: 'C++', aliases: ['c++', 'cpp', 'c plus plus'] },
+      ];
+
+      const RESOURCE_DB = {
+        'React': [
+          { title: 'Official React Docs', url: 'https://react.dev/', type: 'Documentation', icon: 'book-open' },
+          { title: 'React Full Course â€“ freeCodeCamp (YouTube)', url: 'https://www.youtube.com/watch?v=bMknfKXIFA8', type: 'Video', icon: 'play-circle' },
+          { title: 'React Tutorial â€“ Scrimba', url: 'https://scrimba.com/learn/learnreact', type: 'Interactive', icon: 'code' },
+        ],
+        'Vue.js': [
+          { title: 'Vue.js Official Guide', url: 'https://vuejs.org/guide/', type: 'Documentation', icon: 'book-open' },
+          { title: 'Vue 3 Full Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=VeNfHj6MhgA', type: 'Video', icon: 'play-circle' },
+        ],
+        'TypeScript': [
+          { title: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/handbook/', type: 'Documentation', icon: 'book-open' },
+          { title: 'TypeScript Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=30LWjhZzg50', type: 'Video', icon: 'play-circle' },
+          { title: 'TypeScript Exercises', url: 'https://typescript-exercises.github.io/', type: 'Practice', icon: 'code' },
+        ],
+        'Python': [
+          { title: 'Python.org Official Docs', url: 'https://docs.python.org/3/tutorial/', type: 'Documentation', icon: 'book-open' },
+          { title: 'Python Full Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=rfscVS0vtbw', type: 'Video', icon: 'play-circle' },
+          { title: 'CS50P â€“ Harvard Python Course', url: 'https://cs50.harvard.edu/python/', type: 'Course', icon: 'graduation-cap' },
+        ],
+        'Docker': [
+          { title: 'Docker Official Docs', url: 'https://docs.docker.com/get-started/', type: 'Documentation', icon: 'book-open' },
+          { title: 'Docker Tutorial â€“ TechWorld with Nana', url: 'https://www.youtube.com/watch?v=3c-iBn73dDE', type: 'Video', icon: 'play-circle' },
+          { title: 'Play with Docker (Free Lab)', url: 'https://labs.play-with-docker.com/', type: 'Interactive', icon: 'code' },
+        ],
+        'Kubernetes': [
+          { title: 'Kubernetes Official Docs', url: 'https://kubernetes.io/docs/tutorials/', type: 'Documentation', icon: 'book-open' },
+          { title: 'Kubernetes Full Course â€“ TechWorld with Nana', url: 'https://www.youtube.com/watch?v=X48VuDVv0do', type: 'Video', icon: 'play-circle' },
+          { title: 'Kubernetes Playground â€“ Killercoda', url: 'https://killercoda.com/playgrounds/scenario/kubernetes', type: 'Interactive', icon: 'code' },
+        ],
+        'AWS': [
+          { title: 'AWS Skill Builder (Free)', url: 'https://skillbuilder.aws/', type: 'Course', icon: 'graduation-cap' },
+          { title: 'AWS Certified Cloud Practitioner â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=3hLmDS179YE', type: 'Video', icon: 'play-circle' },
+          { title: 'AWS Free Tier', url: 'https://aws.amazon.com/free/', type: 'Practice', icon: 'code' },
+        ],
+        'GCP': [
+          { title: 'Google Cloud Skills Boost (Free)', url: 'https://cloudskillsboost.google/', type: 'Course', icon: 'graduation-cap' },
+          { title: 'GCP Associate Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=jpno8FSqpc8', type: 'Video', icon: 'play-circle' },
+        ],
+        'Machine Learning': [
+          { title: 'ML Crash Course â€“ Google', url: 'https://developers.google.com/machine-learning/crash-course', type: 'Course', icon: 'graduation-cap' },
+          { title: 'Fast.ai Practical Deep Learning', url: 'https://course.fast.ai/', type: 'Course', icon: 'graduation-cap' },
+          { title: 'Kaggle ML Tutorials (Free)', url: 'https://www.kaggle.com/learn', type: 'Interactive', icon: 'code' },
+        ],
+        'SQL': [
+          { title: 'SQLZoo â€“ Interactive SQL', url: 'https://sqlzoo.net/', type: 'Interactive', icon: 'code' },
+          { title: 'SQL Tutorial â€“ Mode Analytics', url: 'https://mode.com/sql-tutorial/', type: 'Documentation', icon: 'book-open' },
+          { title: 'CS50 SQL â€“ Harvard', url: 'https://cs50.harvard.edu/sql/', type: 'Course', icon: 'graduation-cap' },
+        ],
+        'MongoDB': [
+          { title: 'MongoDB University (Free)', url: 'https://learn.mongodb.com/', type: 'Course', icon: 'graduation-cap' },
+          { title: 'MongoDB Crash Course â€“ Traversy', url: 'https://www.youtube.com/watch?v=-56x56UppqQ', type: 'Video', icon: 'play-circle' },
+        ],
+        'Node.js': [
+          { title: 'Node.js Official Docs', url: 'https://nodejs.org/en/docs/', type: 'Documentation', icon: 'book-open' },
+          { title: 'Node.js Full Course â€“ Dave Gray', url: 'https://www.youtube.com/watch?v=f2EqECiTBL8', type: 'Video', icon: 'play-circle' },
+        ],
+        'GraphQL': [
+          { title: 'GraphQL Official Docs', url: 'https://graphql.org/learn/', type: 'Documentation', icon: 'book-open' },
+          { title: 'GraphQL Tutorial â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=ed8SzALpx1Q', type: 'Video', icon: 'play-circle' },
+        ],
+        'Next.js': [
+          { title: 'Next.js Official Docs', url: 'https://nextjs.org/learn', type: 'Documentation', icon: 'book-open' },
+          { title: 'Next.js Full Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=KjY94sAKLlw', type: 'Video', icon: 'play-circle' },
+        ],
+        'Linux': [
+          { title: 'Linux Command Line â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=sWbUDq4S6Y8', type: 'Video', icon: 'play-circle' },
+          { title: 'OverTheWire: Bandit (Linux Game)', url: 'https://overthewire.org/wargames/bandit/', type: 'Interactive', icon: 'code' },
+        ],
+        'CI/CD': [
+          { title: 'GitHub Actions Docs', url: 'https://docs.github.com/en/actions', type: 'Documentation', icon: 'book-open' },
+          { title: 'CI/CD with GitHub Actions â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=R8_veQiYBjI', type: 'Video', icon: 'play-circle' },
+        ],
+        'Figma': [
+          { title: 'Figma Learn (Free)', url: 'https://help.figma.com/hc/en-us/categories/360002051613', type: 'Documentation', icon: 'book-open' },
+          { title: 'Figma UI Design Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=jwCmIBJ8Jtc', type: 'Video', icon: 'play-circle' },
+        ],
+        'Microservices': [
+          { title: 'Microservices Guide â€“ Martin Fowler', url: 'https://martinfowler.com/microservices/', type: 'Documentation', icon: 'book-open' },
+          { title: 'Microservices Full Course â€“ freeCodeCamp', url: 'https://www.youtube.com/watch?v=lL_j7ilk7rc', type: 'Video', icon: 'play-circle' },
+        ],
+      };
+
+      // Parse skills from text against the SKILL_DB
+      const parseSkillsFromText = (text = '') => {
+        const normalizedText = text.toLowerCase();
+        const skills = SKILL_DB
+          .filter(s => s.aliases.concat(s.skill).some(alias => new RegExp(`(^|[^a-z0-9])${alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^a-z0-9])`, 'i').test(text)))
+          .map(s => s.skill);
+        const addSkill = (skill) => { if (!skills.includes(skill)) skills.push(skill); };
+        const hasAny = (terms) => terms.some(term => normalizedText.includes(term));
+        if (hasAny(['arduino', 'microcontroller', 'esp32', 'esp8266', 'stm32', 'wokwi', 'tinkercad', 'circuit simulation', 'firmware', 'embedded'])) {
+          addSkill('Embedded Systems');
+          addSkill('Firmware Engineering');
+        }
+        if (hasAny(['sensor', 'relay', 'actuator', 'automation hardware', 'smart home', 'iot', 'internet of things'])) addSkill('Internet of Things (IoT)');
+        if (hasAny(['sensor', 'relay', 'actuator', 'rover', 'robot', 'robotics'])) addSkill('Robotics');
+        return skills;
+      };
+      const extractAnalysisTerms = (text = '') => {
+        const mappedSkills = parseSkillsFromText(text);
+        if (mappedSkills.length) return mappedSkills;
+        const stopWords = new Set(['about', 'and', 'are', 'candidate', 'description', 'experience', 'for', 'from', 'have', 'job', 'looking', 'must', 'requirements', 'role', 'skills', 'that', 'the', 'this', 'with', 'work', 'years', 'your']);
+        return [...new Set((text.toLowerCase().match(/[a-z][a-z0-9+#.-]{2,}/g) || []).filter(word => !stopWords.has(word)))].slice(0, 12);
+      };
+      const semanticCategories = (skill = '') => {
+        const normalized = skill.toLowerCase();
+        const categories = new Set();
+        if (['arduino', 'microcontrollers', 'embedded systems', 'firmware engineering', 'circuit simulation'].includes(normalized)) categories.add('embedded');
+        if (['sensors', 'relays & actuators', 'internet of things (iot)'].includes(normalized)) categories.add('iot');
+        if (['sensors', 'relays & actuators', 'robotics'].includes(normalized)) categories.add('robotics');
+        return categories;
+      };
+
+      const skillsContextuallyMatch = (jobSkill, resumeSkill) => {
+        if (jobSkill.toLowerCase() === resumeSkill.toLowerCase()) return true;
+        const jobCategories = semanticCategories(jobSkill);
+        const resumeCategories = semanticCategories(resumeSkill);
+        return [...jobCategories].some(category => resumeCategories.has(category));
+      };
+      const showToast = (message) => {
+        setToast(message);
+        window.setTimeout(() => setToast(''), 3200);
+      };
+
+      const useGuestDemo = () => {
+        setIsGuest(true);
+        setUploadedFileName('guest-frontend-resume.txt');
+        setResumeText('Frontend developer with React, JavaScript, TypeScript, Tailwind CSS, Node.js, REST APIs, Git and Figma experience.');
+        setJobDescription('Senior Frontend Developer. Required skills: React, TypeScript, JavaScript, Tailwind CSS, Node.js, REST APIs, Git, Docker, AWS, CI/CD and Kubernetes.');
+        setActiveTab('Dashboard');
+        showToast('Guest demo loaded. Start the analysis when you are ready.');
+      };
+
+      const navigateTo = (tab) => {
+        setActiveTab(tab);
+        const targets = { Dashboard: 'dashboard-top', Resumes: 'resume-scanner', Jobs: 'job-description', Skills: 'skills-summary', Profile: 'profile-card', Settings: 'settings-control' };
+        window.setTimeout(() => document.getElementById(targets[tab])?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+      };
+      const introScreenRef = useRef(null);
+      const matchProjectJobs = () => {
+        const profileText = `${projectTitle} ${projectTech}`.toLowerCase();
+        const hasAny = (terms) => terms.some(term => profileText.includes(term));
+        const concepts = new Set(parseSkillsFromText(projectTech));
+        if (hasAny(['arduino', 'microcontroller', 'esp32', 'raspberry pi pico', 'wokwi', 'tinkercad', 'circuit simulation', 'firmware', 'embedded'])) {
+          concepts.add('Embedded Systems'); concepts.add('Firmware Engineering');
+        }
+        if (hasAny(['sensor', 'relay', 'automation hardware', 'actuator', 'smart home', 'iot'])) concepts.add('Internet of Things (IoT)');
+        if (hasAny(['sensor', 'relay', 'rover', 'robot', 'automation hardware', 'actuator'])) concepts.add('Robotics');
+        if (hasAny(['c++', 'c/c++', 'arduino ide'])) concepts.add('C++');
+        if (hasAny(['python'])) concepts.add('Python');
+
+        const jobs = [
+          { job_id: 'JOB_001', job_title: 'Embedded Firmware Engineer', required_skills: ['Embedded Systems', 'Firmware Engineering', 'C++'] },
+          { job_id: 'JOB_002', job_title: 'IoT Prototype Engineer', required_skills: ['Internet of Things (IoT)', 'Embedded Systems', 'Python'] },
+          { job_id: 'JOB_003', job_title: 'Robotics Systems Engineer', required_skills: ['Robotics', 'Embedded Systems', 'Firmware Engineering'] },
+          { job_id: 'JOB_004', job_title: 'IT Support Administrator', required_skills: ['Windows', 'Help Desk', 'Active Directory'], excluded: true }
+        ];
+        const hasProjectEvidence = hasAny(['built', 'prototype', 'rover', 'automation', 'smart ', 'simulat', 'project']);
+        setIsJobMatching(true);
+        window.setTimeout(() => {
+          const opportunities = jobs.filter(job => !job.excluded).map(job => {
+            const matched = job.required_skills.filter(skill => concepts.has(skill));
+            const coverage = matched.length / job.required_skills.length;
+            const match_percentage = Math.round(coverage * 85 + (hasProjectEvidence ? 15 : 0));
+            return {
+              job_id: job.job_id,
+              job_title: job.job_title,
+              match_percentage,
+              targeting_reason: `Semantic alignment: ${matched.join(', ')}${hasProjectEvidence ? ' plus hands-on project evidence' : ''} maps directly to this role's hardware-software requirements.`
+            };
+          }).filter(job => job.match_percentage >= 80).sort((a, b) => b.match_percentage - a.match_percentage).slice(0, 2);
+          setJobMatches({ opportunities });
+          setIsJobMatching(false);
+        }, 450);
+      };      const introLogoRef = useRef(null);
+      const dashboardContainerRef = useRef(null);
+      const pipelineRef = useRef(null);
+      const scoreRef = useRef(null);
+
+      // Intro animation sequencer
+      useEffect(() => {
+        const tl = gsap.timeline({
+          onComplete: () => {
+            setIsIntroComplete(true);
+            // Trigger dashboard entrance stagger
+            gsap.fromTo(".stagger-card", 
+              { opacity: 0, y: 24 }, 
+              { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power4.out" }
+            );
+          }
+        });
+
+        // 1. Initial logo glow/breathing
+        tl.to(introLogoRef.current, {
+          scale: 1.05,
+          rotate: 2,
+          duration: 1.2,
+          yoyo: true,
+          repeat: 1,
+          ease: "sine.inOut"
+        });
+
+        // 2. Shrink logo slightly before expanding (Google Classroom style)
+        tl.to(introLogoRef.current, {
+          scale: 0.9,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+
+        // 3. Expand intro logo to cover space & fade out intro screen
+        tl.to(introScreenRef.current, {
+          clipPath: "circle(0% at 50% 50%)",
+          duration: 0.9,
+          ease: "power4.inOut"
+        });
+
+        // 4. Reveal dashboard
+        tl.fromTo(dashboardContainerRef.current, {
+          opacity: 0,
+          scale: 0.96,
+        }, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          ease: "power3.out"
+        }, "-=0.7");
+      }, []);
+
+      // Trigger Lucide icons parser when UI changes
+      useEffect(() => {
+        if (typeof lucide !== 'undefined') {
+          window.setTimeout(() => lucide.createIcons(), 50);
+        }
+      }, [scanProgress, isIntroComplete, matchedSkills, missingSkills, activeStation, jobMatches]);
+
+      // Toggle Theme helper
+      useEffect(() => {
+        document.documentElement.classList.toggle('dark', isDarkTheme);
+        document.body.classList.toggle('light-theme', !isDarkTheme);
+        localStorage.setItem('resugo-theme', isDarkTheme ? 'dark' : 'light');
+      }, [isDarkTheme]);
+
+      const toggleTheme = () => setIsDarkTheme(currentTheme => !currentTheme);
+
+      // Simulated pipeline stations
+      const stations = [
+        { name: "Resume Parsing", icon: "file-text" },
+        { name: "OCR Check", icon: "scan" },
+        { name: "Skill Extraction", icon: "cpu" },
+        { name: "AI Suggestions", icon: "brain" },
+        { name: "Job Match", icon: "target" }
+      ];
+
+      // Read resume and job-description files without leaving the form in a broken state.
+      const extractTextFromFile = async (file) => {
+        const maxFileSize = 10 * 1024 * 1024;
+        if (!file) throw new Error('No file was selected.');
+        if (file.size > maxFileSize) throw new Error('Choose a file smaller than 10 MB.');
+        if (file.type.startsWith('text/') || /\.(txt|md|csv)$/i.test(file.name)) return (await file.text()).trim();
+        if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+          if (!window.pdfjsLib) throw new Error('PDF reading is unavailable. Paste the text instead.');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+          const pages = await Promise.all(Array.from({ length: pdf.numPages }, async (_, index) => {
+            const page = await pdf.getPage(index + 1);
+            const text = await page.getTextContent();
+            return text.items.map(item => item.str).join(' ');
+          }));
+          return pages.join(' ').trim();
+        }
+        throw new Error('Use a PDF, TXT, Markdown, or CSV file.');
+      };
+
+      const handleFileDrop = async (e, target = 'resume') => {
+        e.preventDefault();
+        setDragging(false);
+        const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+        const file = files && files[0];
+        if (!file) return;
+        try {
+          const text = await extractTextFromFile(file);
+          if (!text) throw new Error('No readable text was found in this file.');
+          if (target === 'job') {
+            setUploadedJobFileName(file.name);
+            setJobDescription(text);
+            showToast('Job description uploaded. Review it, then start the analysis.');
+          } else {
+            setUploadedFileName(file.name);
+            setResumeText(text);
+            showToast('Resume uploaded. Review it, then start the analysis.');
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'The file could not be read.';
+          showToast(`${target === 'job' ? 'Job description' : 'Resume'} upload failed: ${message}`);
+        } finally {
+          if (e.target && e.target.value !== undefined) e.target.value = '';
+        }
+      };
+      // Main Scanning Orchestrator
+      const startPipelineScanning = () => {
+        const jobSkills = extractAnalysisTerms(jobDescription);
+        const resumeSkills = extractAnalysisTerms(resumeText);
+        if (!resumeSkills.length) {
+          showToast('Add readable resume text or upload a supported file before starting the analysis.');
+          return;
+        }
+        if (!jobSkills.length) {
+          showToast('Add readable job-description text or upload a supported file before starting the analysis.');
+          return;
+        }
+
+        const matched = jobSkills.filter(jobSkill => resumeSkills.some(resumeSkill => skillsContextuallyMatch(jobSkill, resumeSkill)));
+        const missing = jobSkills.filter(jobSkill => !resumeSkills.some(resumeSkill => skillsContextuallyMatch(jobSkill, resumeSkill)));
+        const matchPct = Math.round((matched.length / jobSkills.length) * 100);
+        // Apply the calculated score in the same state update cycle. The previous nested
+        // interval left the dashboard showing "--" for several seconds and could leave it stale.
+        setMatchedSkills(matched);
+        setMissingSkills(missing);
+        setSelectedSkill('');
+        setActiveStation(stations.length - 1);
+        setAnalysisResult({ matchPercentage: matchPct, matchedCount: matched.length, targetCount: jobSkills.length });
+        setFinalScore(matchPct);
+        setScanProgress(2);
+        triggerConfetti();
+        showToast(`Compatibility analysis complete: ${matchPct}% match.`);
+      };
+      // Confetti generation
+      const triggerConfetti = () => {
+        const particles = [];
+        const colors = ['#22D3EE', '#5B5FEF', '#22C55E', '#F59E0B', '#EF4444'];
+        for (let i = 0; i < 45; i++) {
+          particles.push({
+            id: i,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            left: 20 + Math.random() * 60 + '%',
+            delay: Math.random() * 0.4 + 's',
+            scale: Math.random() * 0.8 + 0.4
+          });
+        }
+        setConfetti(particles);
+      };
+
+      // Magnetic hover button logic
+      const handleMagneticMove = (e) => {
+        const bounds = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - bounds.left - bounds.width / 2;
+        const y = e.clientY - bounds.top - bounds.height / 2;
+        gsap.to(e.currentTarget, {
+          x: x * 0.45,
+          y: y * 0.45,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      };
+
+      const handleMagneticLeave = (e) => {
+        gsap.to(e.currentTarget, {
+          x: 0,
+          y: 0,
+          duration: 0.5,
+          ease: "elastic.out(1, 0.4)"
+        });
+      };
+
+      return (
+        <div className={`relative min-h-screen ${isDarkTheme ? 'dark' : ''} overflow-x-hidden`}>
+          
+          {/* Animated Background Orbs */}
+          <div className="absolute inset-0 z-0 bg-bg bg-grid pointer-events-none overflow-hidden">
+            <div className="absolute top-[-100px] left-[-150px] w-[500px] h-[500px] bg-primary rounded-full orb-glow"></div>
+            <div className="absolute bottom-[5%] right-[-100px] w-[600px] h-[600px] bg-secondary rounded-full orb-glow"></div>
+            <div className="absolute top-[40%] left-[35%] w-[450px] h-[450px] bg-accent rounded-full orb-glow"></div>
+          </div>
+
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• APP OPENING ANIMATION SCREEN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {!isIntroComplete && (
+            <div 
+              ref={introScreenRef} 
+              className="fixed inset-0 z-[999] bg-[#09090B] flex flex-col items-center justify-center pointer-events-none"
+              style={{ clipPath: "circle(100% at 50% 50%)" }}
+            >
+              {/* Pulsing Glowing Logo Container */}
+              <div 
+                ref={introLogoRef}
+                className="relative w-44 h-44 md:w-56 md:h-56 flex items-center justify-center rounded-full dark-shadow-glow"
+              >
+                <img 
+                  src="logo.jpg" 
+                  alt="ResuGO Logo" 
+                  className="w-full h-full object-cover rounded-full border-2 border-primary/45" 
+                />
+                {/* Rotating Gradient Ring */}
+                <div className="absolute inset-[-6px] rounded-full border border-dashed border-accent/60 animate-[spin_10s_linear_infinite]"></div>
+                {/* Floating particle animations */}
+                <div className="absolute inset-[-14px] rounded-full border border-dotted border-secondary/30 animate-[spin_16s_linear_infinite_reverse]"></div>
+              </div>
+              <h1 className="mt-8 text-2xl font-bold font-grotesk tracking-wider text-slate-200">
+                Resu<span className="text-accent">GO</span>
+              </h1>
+            </div>
+          )}
+
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DASHBOARD MAIN CONTAINER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          <div 
+            ref={dashboardContainerRef}
+            className="relative z-10 flex min-h-screen transition-all duration-300"
+          >
+            
+            {/* â”€â”€ SIDEBAR PANEL â”€â”€ */}
+            <aside 
+              className={`flex flex-col border-r border-cardBorder bg-[#09090B]/60 backdrop-blur-2xl transition-all duration-300 ${
+                isSidebarOpen ? 'w-64' : 'w-20'
+              }`}
+            >
+              {/* Sidebar Header Brand */}
+              <div className="flex items-center px-6 py-6 border-b border-cardBorder">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-accent/20">
+                    <img src="logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+                  </div>
+                  {isSidebarOpen && (
+                    <span className="text-xl font-bold font-grotesk tracking-wide text-slate-100 flex items-center gap-1">
+                      Resu<span className="text-accent">GO</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Sidebar Links */}
+              <nav className="flex-1 px-4 py-6 space-y-2">
+                {[
+                  { name: 'Dashboard', icon: 'layout-dashboard' },
+                  { name: 'Resumes', icon: 'file-text' },
+                  { name: 'Jobs', icon: 'briefcase' },
+                  { name: 'Skills', icon: 'cpu' },
+                  { name: 'Profile', icon: 'user' },
+                  { name: 'Settings', icon: 'settings' }
+                ].map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => navigateTo(item.name)}
+                    className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ${
+                      activeTab === item.name 
+                        ? 'bg-primary/10 text-accent border border-accent/20 shadow-[0_0_12px_rgba(34,211,238,0.1)]' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    }`}
+                  >
+                    <i data-lucide={item.icon} className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110"></i>
+                    {isSidebarOpen && <span className="font-medium text-sm font-grotesk">{item.name}</span>}
+                  </button>
+                ))}
+
+                 {/* Resume Builder â€” external link */}
+                 <a
+                   href="resume-builder.html"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 16px', borderRadius: '12px', color: '#fbbf24', textDecoration: 'none', border: '1px solid transparent', transition: 'all 0.3s' }}
+                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.06)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.25)'; }}
+                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
+                 >
+                   <i data-lucide="file-plus" style={{ width: '20px', height: '20px', flexShrink: 0 }}></i>
+                   {isSidebarOpen && <span style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'Space Grotesk, sans-serif' }}>Resume Builder</span>}
+                 </a>
+               </nav>
+
+              {/* Sidebar Footer toggle */}
+              <div className="p-4 border-t border-cardBorder">
+                <button 
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="w-full flex items-center justify-center p-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  <i data-lucide={isSidebarOpen ? "chevron-left" : "chevron-right"} className="w-5 h-5"></i>
+                </button>
+              </div>
+            </aside>
+
+            {/* â”€â”€ CENTRAL DASHBOARD AREA â”€â”€ */}
+            <main className="flex-1 flex flex-col min-h-screen">
+              
+              {/* TOP HEADER NAVIGATION */}
+              <header className="flex items-center justify-between px-8 py-5 bg-[#09090B]/40 backdrop-blur-md border-b border-cardBorder">
+                {/* Search box */}
+                <div className="relative w-72 md:w-96">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-slate-500">
+                    <i data-lucide="search" className="w-4 h-4"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    placeholder="Search resumes, jobs, matches..." 
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-cardBorder bg-black/30 placeholder-slate-500 focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 text-sm transition-all"
+                  />
+                </div>
+
+                {/* Right controls */}
+                <div className="flex items-center gap-5">
+                  <button onClick={useGuestDemo} className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-accent/30 bg-accent/10 text-accent hover:bg-accent/20 transition-all text-xs font-semibold">
+                    <i data-lucide="user-round" className="w-4 h-4"></i>
+                    {isGuest ? 'Guest session' : 'Guest login'}
+                  </button>
+                  {/* Theme Switcher */}
+                  <button id="settings-control" onClick={toggleTheme}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl border border-cardBorder hover:border-accent/40 bg-white/5 text-slate-300 hover:text-white transition-all text-xs font-medium"
+                  >
+                    <i data-lucide={isDarkTheme ? "sun" : "moon"} className="w-4 h-4"></i>
+                    <span>{isDarkTheme ? `Light mode` : `Dark mode`}</span>
+                  </button>
+
+                  {/* Bell Icon Notification */}
+                  <button onClick={() => showToast(`You are all caught up.`)} className="relative p-2.5 rounded-xl border border-cardBorder hover:border-accent/40 bg-white/5 text-slate-300 hover:text-white transition-all">
+                    <i data-lucide="bell" className="w-5 h-5"></i>
+                    <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-danger animate-pulse"></span>
+                  </button>
+
+                  {/* Avatar Profile */}
+                  <div id="profile-card" className="flex items-center gap-3 pl-2 border-l border-cardBorder">
+                    <img 
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&fit=crop&q=80" 
+                      alt="Profile Avatar" 
+                      className="w-9 h-9 rounded-xl object-cover border border-primary/20"
+                    />
+                    <div className="hidden md:block">
+                      <div className="text-xs font-semibold text-slate-200">{isGuest ? `Guest User` : `Alex Morgan`}</div>
+                      <div className="text-[10px] text-slate-500">{isGuest ? `Guest demo` : `Premium Pro`}</div>
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              {/* DASHBOARD GRID CONTENT */}
+              <div id="dashboard-top" className="flex-1 p-8 space-y-8 overflow-y-auto">
+                {toast && <div role="status" className="fixed top-24 right-6 z-50 max-w-sm rounded-xl border border-accent/30 bg-[#111827] px-4 py-3 text-sm text-slate-100 shadow-xl">{toast}</div>}
+                
+                {/* 1. Hero greeting */}
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+
+                  <button onClick={() => navigateTo(`Resumes`)} onMouseMove={handleMagneticMove}
+                    onMouseLeave={handleMagneticLeave}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-medium text-sm shadow-lg hover:shadow-primary/20 transition-all cursor-pointer font-grotesk hover:scale-[1.02]"
+                  >
+                    <i data-lucide="plus-circle" className="w-4 h-4"></i>
+                    <span>Analyze New Resume</span>
+                  </button>
+                </div>
+
+                {/* 2. Top Metric Cards (Resume, ATS, Job Match) */}
+                <section id="job-matching" className="glass-card rounded-2xl p-6 border border-primary/25 scroll-mt-6">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-5">
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-[0.16em] text-accent">Job Matching Engine</div>
+                      <h2 className="mt-2 text-2xl font-bold font-grotesk text-slate-100">Turn your project into your next role</h2>
+                      <p className="mt-2 max-w-2xl text-sm text-slate-400">Match your active project work with currently available opportunities.</p>
+                    </div>
+                    <button onClick={matchProjectJobs} disabled={isJobMatching} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary px-5 py-3 text-sm font-semibold text-white disabled:opacity-65">
+                      <i data-lucide={isJobMatching ? 'loader-circle' : 'briefcase-business'} className={`w-4 h-4 ${isJobMatching ? 'animate-spin' : ''}`}></i>
+                      {isJobMatching ? 'Finding matches...' : 'Find matching jobs'}
+                    </button>
+                  </div>
+                  <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <label className="block text-xs font-semibold text-slate-300">Active project title
+                      <input value={projectTitle} onChange={e => setProjectTitle(e.target.value)} className="mt-2 w-full rounded-xl border border-cardBorder bg-black/20 p-3 text-sm text-slate-200 outline-none focus:border-accent/50" placeholder="Your current project" />
+                    </label>
+                    <label className="block text-xs font-semibold text-slate-300">Tech stack used
+                      <textarea value={projectTech} onChange={e => setProjectTech(e.target.value)} rows="3" className="mt-2 w-full resize-none rounded-xl border border-cardBorder bg-black/20 p-3 text-sm text-slate-200 outline-none focus:border-accent/50" placeholder="Arduino, Sensors, C++, Python..." />
+                    </label>
+                  </div>
+                  {jobMatches && <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">{jobMatches.opportunities.length ? jobMatches.opportunities.map(job => <div key={job.job_id} className="rounded-xl border border-success/30 bg-success/5 p-5"><div className="flex items-start justify-between gap-3"><div><div className="text-base font-bold font-grotesk text-slate-100">{job.job_title}</div><div className="mt-1 text-xs text-slate-400">{job.job_id}</div></div><span className="rounded-lg border border-success/25 bg-success/10 px-2 py-1 text-xs font-bold text-success">{job.match_percentage}%</span></div><p className="mt-3 text-sm text-slate-300">{job.targeting_reason}</p><button className="mt-4 rounded-lg bg-success px-3 py-2 text-xs font-bold text-black">Apply Instantly</button></div>) : <div className="rounded-xl border border-cardBorder bg-black/20 p-5 text-sm text-slate-400">No roles cleared the 80% contextual-match threshold. Add concrete project technologies or outcomes.</div>}</div>}
+                </section>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Resume score comes only from the completed skill comparison. */}
+                  <div className="glass-card stagger-card p-6 rounded-2xl flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full border border-cardBorder water-wave-container flex-shrink-0 bg-black/40">
+                        <div className="water-fill" style={{ height: `${hasCompletedAnalysis ? displayedScore : 0}%` }}>
+                          <div className="water-wave water-wave-1"></div>
+                          <div className="water-wave water-wave-2"></div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xs font-bold font-grotesk text-slate-200">{hasCompletedAnalysis ? `${displayedScore}%` : '--'}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 font-semibold font-grotesk">Resume Match Score</div>
+                        <div className="text-2xl font-bold font-grotesk text-accent mt-0.5">{hasCompletedAnalysis ? `${displayedScore}%` : '--'}</div>
+                        <div className="text-[10px] text-slate-500 mt-1">{hasCompletedAnalysis ? 'Based on matched job skills' : 'Analyze resume to unlock'}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ATS score only unlocks after a completed resume analysis. */}
+                  <button
+                    type="button"
+                    onClick={() => hasResume ? navigateTo('Resumes') : showToast('Upload a resume first to unlock ATS scoring.')}
+                    className={`glass-card stagger-card p-6 rounded-2xl flex items-center justify-between text-left ${hasResume ? 'cursor-pointer' : 'opacity-55 cursor-not-allowed'}`}
+                  >
+                    <div>
+                      <div className="text-xs text-slate-400 font-semibold font-grotesk">ATS Score</div>
+                      <div className="text-3xl font-bold font-grotesk text-accent mt-1">{atsScore === null ? '--' : atsScore}</div>
+                      <div className="text-[10px] text-slate-500 mt-1">{hasCompletedAnalysis ? 'Based on your resume' : 'Upload resume to unlock'}</div>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                      <i data-lucide={hasResume ? 'gauge' : 'lock'} className="w-5 h-5"></i>
+                    </div>
+                  </button>
+
+                  {/* Job search matching also requires a resume. */}
+                  <button
+                    type="button"
+                    onClick={() => hasResume ? navigateTo('Jobs') : showToast('Upload a resume first to unlock job matching.')}
+                    className={`glass-card stagger-card p-6 rounded-2xl flex items-center justify-between text-left ${hasResume ? 'cursor-pointer' : 'opacity-55 cursor-not-allowed'}`}
+                  >
+                    <div>
+                      <div className="text-xs text-slate-400 font-semibold font-grotesk">Job Search Match</div>
+                      <div className="text-3xl font-bold font-grotesk text-accent mt-1">{hasCompletedAnalysis ? `${displayedScore}%` : '--'}</div>
+                      <div className="text-[10px] text-slate-500 mt-1">{hasCompletedAnalysis ? 'Based on target job' : 'Upload resume to unlock'}</div>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20">
+                      <i data-lucide={hasResume ? 'target' : 'lock'} className="w-5 h-5"></i>
+                    </div>
+                  </button>
+
+                  {/* Metric: Applications */}
+                  <div className="glass-card stagger-card p-6 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-slate-400 font-semibold font-grotesk">Applications</div>
+                      <div className="text-3xl font-bold font-grotesk text-accent mt-1">12 <span className="text-sm font-normal text-success">â†‘</span></div>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent border border-accent/20">
+                      <i data-lucide="briefcase" className="w-5 h-5"></i>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Missing & Matched Skills Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Missing Skills Card */}
+                  <div id="skills-summary" className="glass-card stagger-card p-6 rounded-2xl border-l-4 border-danger/80">
+                    <h3 className="text-sm font-bold font-grotesk text-danger uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <i data-lucide="alert-circle" className="w-4 h-4"></i> Missing Skills
+                      {scanProgress === 0 && <span className="text-[9px] font-normal text-slate-500 normal-case tracking-normal ml-1">â€” run analysis to populate</span>}
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {(hasCompletedAnalysis ? missingSkills : []).map(skill => (
+                        <span 
+                          key={skill}
+                          onClick={() => { setSelectedSkill(skill); document.getElementById(`resources-${skill}`)?.scrollIntoView({ behavior: `smooth`, block: `center` }); }} className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-danger/10 text-danger border border-danger/25 hover:shadow-[0_0_12px_rgba(239,68,68,0.2)] transition-shadow cursor-pointer"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      {hasCompletedAnalysis && missingSkills.length === 0 && (
+                        <span className="text-xs text-slate-500 italic">No gaps detected â€” great profile match!</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Matched Skills Card */}
+                  <div className="glass-card stagger-card p-6 rounded-2xl border-l-4 border-success/80">
+                    <h3 className="text-sm font-bold font-grotesk text-success uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <i data-lucide="check-circle-2" className="w-4 h-4"></i> Matched Skills
+                      {scanProgress === 0 && <span className="text-[9px] font-normal text-slate-500 normal-case tracking-normal ml-1">â€” run analysis to populate</span>}
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {(hasCompletedAnalysis ? matchedSkills : []).map(skill => (
+                        <span 
+                          key={skill}
+                          onClick={() => showToast(`${skill} is already matched in this analysis.`)} className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-success/10 text-success border border-success/25 hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-shadow cursor-pointer"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      {hasCompletedAnalysis && matchedSkills.length === 0 && (
+                        <span className="text-xs text-slate-500 italic">No matching skills found â€” consider adding more to your resume.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* How it works roadmap */}
+                <section className="glass-card stagger-card p-6 rounded-2xl" aria-labelledby="how-it-works-title">
+                  <div className="flex items-start justify-between gap-4 mb-6">
+                    <div>
+                      <div className="text-xs font-bold font-grotesk uppercase tracking-widest text-primary mb-1">How ResuGO works</div>
+                      <h3 id="how-it-works-title" className="text-xl font-bold font-grotesk text-slate-100">From resume to your next best move</h3>
+                      <p className="text-sm text-slate-400 mt-1">Use this four-step roadmap to understand exactly what the dashboard does.</p>
+                    </div>
+                    <i data-lucide="route" className="w-6 h-6 text-accent flex-shrink-0"></i>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      ['1', 'Add your resume', 'Upload a PDF or paste your resume text so we can identify your skills.'],
+                      ['2', 'Add a target job', 'Paste the job description you want to apply for.'],
+                      ['3', 'Run the analysis', 'ResuGO calculates ATS, job-match, matched, and missing skills.'],
+                      ['4', 'Close the gaps', 'Use the tailored free resources to strengthen your next application.'],
+                    ].map(([number, title, description]) => (
+                      <div key={number} className="rounded-xl border border-cardBorder bg-black/20 p-4">
+                        <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-accent/10 text-accent text-xs font-bold">{number}</span>
+                        <h4 className="mt-3 text-sm font-bold text-slate-200">{title}</h4>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                {/* 4. Resume Scanner Water Pipeline Component */}
+                <div id="resume-scanner" className="glass-card stagger-card p-8 rounded-2xl relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-lg font-bold font-grotesk text-slate-100 flex items-center gap-2">
+                        <i data-lucide="scan" className="w-5 h-5 text-accent animate-pulse"></i> Resume Analysis Pipeline
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">Upload your resume to watch our dynamic verification scanner analyze compatibility.</p>
+                    </div>
+
+                    {scanProgress === 2 && (
+                      <button 
+                        onClick={() => {
+                          setScanProgress(0);
+                          setAnalysisResult(null);
+                          setFinalScore(0);
+                          setUploadedFileName('');
+                          setUploadedJobFileName('');
+                          setJobDescription('');
+                          setResumeText('');
+                          setMatchedSkills([]);
+                          setMissingSkills([]);
+                        }}
+                        className="px-3 py-1.5 text-xs rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-cardBorder transition-all"
+                      >
+                        Reset Scanner
+                      </button>
+                    )}
+                  </div>
+
+                  {/* UPLOADER INTERFACE */}
+                  {scanProgress === 0 && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Left Column: PDF Dropzone */}
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                          onDragLeave={() => setDragging(false)}
+                          onDrop={handleFileDrop}
+                          className={`border border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[220px] ${
+                            dragging ? 'border-accent bg-accent/5' : 'border-cardBorder bg-black/10'
+                          }`}
+                        >
+                          <input 
+                            type="file" 
+                            id="resume-file" 
+                            className="hidden" 
+                            accept=".pdf,.txt,.md" 
+                            onChange={handleFileDrop}
+                          />
+                          <label 
+                            htmlFor="resume-file"
+                            className="flex flex-col items-center justify-center cursor-pointer group w-full"
+                          >
+                            <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform mb-3">
+                              <i data-lucide="upload-cloud" className="w-7 h-7"></i>
+                            </div>
+                            {uploadedFileName ? (
+                              <div className="text-center">
+                                <span className="text-sm font-semibold text-accent block truncate max-w-[200px] mx-auto">{uploadedFileName}</span>
+                                <span className="text-xs text-slate-500 mt-1 block">Click to replace file</span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="text-sm font-semibold text-slate-200 block">Drag & drop your resume here</span>
+                                <span className="text-xs text-slate-500 mt-1 block">or click to browse from files</span>
+                              </div>
+                            )}
+                          </label>
+                        </div>
+
+                        {/* Right Column: Job Description Textarea */}
+                        <div id="job-description" className="flex flex-col min-h-[220px]">
+                          <input type="file" id="job-description-file" className="hidden" accept=".pdf,.txt,.md,.csv" onChange={(e) => handleFileDrop(e, 'job')} />
+                          <label htmlFor="job-description-file" className="mb-2 inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-cardBorder bg-black/15 px-3 py-2 text-xs font-semibold text-slate-300 hover:border-accent/50 hover:text-accent">
+                            <i data-lucide="file-up" className="w-3.5 h-3.5"></i>
+                            {uploadedJobFileName ? `Replace job file: ${uploadedJobFileName}` : 'Upload job description file'}
+                          </label>
+                          <textarea
+                            value={jobDescription}
+                            onChange={(e) => setJobDescription(e.target.value)}
+                            placeholder="Paste the target job description or requirements here... (e.g. Senior Frontend Developer with 5+ years of React, Tailwind CSS, TypeScript...)"
+                            className="w-full flex-1 p-5 rounded-xl border border-cardBorder bg-black/15 placeholder-slate-500 text-slate-100 text-sm focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 resize-none transition-all"
+                          />
+                          <textarea
+                            value={resumeText}
+                            onChange={(e) => setResumeText(e.target.value)}
+                            placeholder="Paste your resume text or skills here. This is required for accurate skill matching, especially for PDF files."
+                            className="w-full min-h-[105px] mt-4 p-4 rounded-xl border border-cardBorder bg-black/15 placeholder-slate-500 text-slate-100 text-sm focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 resize-y transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Start Scanning Trigger Button */}
+                      <div className="flex justify-end pt-2">
+                        <button
+                          disabled={!jobDescription.trim() || !resumeText.trim()}
+                          onClick={startPipelineScanning}
+                          className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-semibold font-grotesk text-sm hover:shadow-[0_0_20px_rgba(91,95,239,0.3)] disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-[1.02] cursor-pointer"
+                        >
+                          Start Compatibility Analysis âœ¦
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* LIQUID WATER PIPELINE ANIMATOR */}
+                  {scanProgress > 0 && (
+                    <div className="relative py-8">
+                      <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
+                        
+                        {/* Start Node: Glowing PDF File */}
+                        <div className="flex flex-col items-center flex-shrink-0">
+                          <div className="w-14 h-18 bg-primary/10 border border-primary/30 rounded-lg p-2.5 flex flex-col justify-between items-center relative dark-shadow-glow">
+                            <i data-lucide="file-text" className="w-7 h-7 text-accent"></i>
+                            <span className="text-[9px] font-bold text-slate-400 mt-1 truncate max-w-[60px]">{uploadedFileName || "Resume"}</span>
+                          </div>
+                          <span className="text-[10px] text-slate-500 mt-2 font-medium">Uploaded PDF</span>
+                        </div>
+
+                        {/* Flow Pipeline Pipe */}
+                        <div className="flex-1 w-2 h-48 lg:w-auto lg:h-4 bg-black/50 border border-cardBorder rounded-full relative overflow-hidden flex items-center">
+                          {scanProgress === 1 && (
+                            <div className="pipe-fluid absolute left-0 top-0 h-full rounded-full transition-all duration-500" style={{ width: `${(activeStation + 1) * 20}%` }}></div>
+                          )}
+                          {scanProgress === 2 && (
+                            <div className="absolute left-0 top-0 h-full rounded-full bg-success/40" style={{ width: '100%' }}></div>
+                          )}
+                        </div>
+
+                        {/* Middle stations */}
+                        <div className="flex flex-col lg:flex-row gap-6 items-center flex-grow justify-around w-full">
+                          {stations.map((st, index) => {
+                            const isCompleted = index < activeStation || scanProgress === 2;
+                            const isActive = index === activeStation && scanProgress === 1;
+                            
+                            return (
+                              <div key={st.name} className="flex flex-col items-center text-center">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-500 ${
+                                  isCompleted 
+                                    ? 'bg-success/15 border-success text-success shadow-[0_0_12px_rgba(34,197,94,0.35)]' 
+                                    : isActive 
+                                      ? 'bg-primary/25 border-accent text-accent shadow-[0_0_12px_rgba(34,211,238,0.5)] animate-pulse' 
+                                      : 'bg-black/40 border-cardBorder text-slate-600'
+                                }`}>
+                                  {isCompleted ? (
+                                    <i data-lucide="check" className="w-5 h-5"></i>
+                                  ) : (
+                                    <i data-lucide={st.icon} className="w-5 h-5"></i>
+                                  )}
+                                </div>
+                                <span className={`text-[10px] mt-2 font-bold font-grotesk tracking-wide ${
+                                  isCompleted ? 'text-success' : isActive ? 'text-accent' : 'text-slate-500'
+                                }`}>
+                                  {st.name}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Pipe connection */}
+                        <div className="flex-1 w-2 h-12 lg:w-auto lg:h-4 bg-black/50 border border-cardBorder rounded-full relative overflow-hidden flex items-center">
+                          {scanProgress === 2 && (
+                            <div className="absolute left-0 top-0 h-full rounded-full bg-success/40" style={{ width: '100%' }}></div>
+                          )}
+                        </div>
+
+                        {/* End Node: Beaker Beaker Score Tank */}
+                        <div className="flex flex-col items-center flex-shrink-0 relative">
+                          <div className="w-24 h-32 border border-cardBorder water-wave-beaker flex-shrink-0 bg-black/40 flex flex-col justify-end relative shadow-[inset_0_4px_16px_rgba(255,255,255,0.03)]">
+                            {/* Water liquid filler */}
+                            <div className="water-fill" style={{ height: `${displayedScore}%` }}>
+                              <div className="water-wave water-wave-1"></div>
+                              <div className="water-wave water-wave-2"></div>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center flex-col z-20">
+                              <span className="text-xl font-bold font-grotesk text-slate-100">{displayedScore}%</span>
+                              <span className="text-[9px] text-slate-400 mt-0.5">COMPATIBLE</span>
+                            </div>
+
+                            {/* Confetti container inside Beaker */}
+                            {scanProgress === 2 && confetti.length > 0 && (
+                              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                {confetti.map(p => (
+                                  <div 
+                                    key={p.id} 
+                                    className="confetti-particle" 
+                                    style={{
+                                      backgroundColor: p.color,
+                                      left: p.left,
+                                      animationDelay: p.delay,
+                                      transform: `scale(${p.scale})`
+                                    }}
+                                  ></div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Checked Completed Mark */}
+                          {scanProgress === 2 && confetti.length > 0 && (
+                            <div className="absolute top-[-10px] right-[-10px] w-7 h-7 rounded-full bg-success flex items-center justify-center text-white border border-[#09090B] shadow-[0_0_12px_rgba(34,197,94,0.4)] animate-[bounce_0.6s_ease-out]">
+                              <i data-lucide="check" className="w-4 h-4"></i>
+                            </div>
+                          )}
+
+                          <span className="text-[10px] text-slate-500 mt-3 font-semibold">Glass Beaker Score</span>
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Custom SVG Charts Section (Radar Chart & Area Chart) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Custom Radar Chart Card */}
+                  <div className="glass-card stagger-card p-6 rounded-2xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-bold font-grotesk uppercase tracking-wider text-slate-300">Radar Chart</h4>
+                      <i data-lucide="info" className="w-4 h-4 text-slate-500"></i>
+                    </div>
+                    {/* SVG Radar implementation */}
+                    <div className="w-full h-64 flex items-center justify-center bg-black/20 rounded-xl relative">
+                      <svg width="220" height="220" viewBox="0 0 200 200" className="overflow-visible">
+                        {/* Radar grid borders */}
+                        {[40, 70, 100].map((r, i) => (
+                          <polygon 
+                            key={i}
+                            points="100,20 176,75 147,165 53,165 24,75" 
+                            fill="none" 
+                            stroke="rgba(255, 255, 255, 0.05)" 
+                            strokeWidth="1"
+                            transform={`translate(${100 - r}, ${100 - r}) scale(${r / 100})`}
+                          />
+                        ))}
+                        {/* Axes lines */}
+                        <line x1="100" y1="100" x2="100" y2="20" stroke="rgba(255, 255, 255, 0.08)" strokeDasharray="3" />
+                        <line x1="100" y1="100" x2="176" y2="75" stroke="rgba(255, 255, 255, 0.08)" strokeDasharray="3" />
+                        <line x1="100" y1="100" x2="147" y2="165" stroke="rgba(255, 255, 255, 0.08)" strokeDasharray="3" />
+                        <line x1="100" y1="100" x2="53" y2="165" stroke="rgba(255, 255, 255, 0.08)" strokeDasharray="3" />
+                        <line x1="100" y1="100" x2="24" y2="75" stroke="rgba(255, 255, 255, 0.08)" strokeDasharray="3" />
+                        
+                        {/* Analysis values are calculated from the uploaded resume and target job. */}
+                        {hasCompletedAnalysis && (
+                          <polygon points={radarPoints} fill="rgba(34, 211, 238, 0.12)" stroke="#22D3EE" strokeWidth="2" className="animate-[pulse_3s_infinite]" />
+                        )}
+                        <polygon points={targetRadarPoints} fill="none" stroke="#5B5FEF" strokeWidth="1.5" strokeDasharray="4" />
+
+                        {/* Node labels */}
+                        <text x="100" y="12" fill="#94A3B8" fontSize="8" textAnchor="middle">Job match</text>
+                        <text x="186" y="78" fill="#94A3B8" fontSize="8" textAnchor="start">ATS</text>
+                        <text x="157" y="177" fill="#94A3B8" fontSize="8" textAnchor="start">Coverage</text>
+                        <text x="43" y="177" fill="#94A3B8" fontSize="8" textAnchor="end">Skills</text>
+                        <text x="14" y="78" fill="#94A3B8" fontSize="8" textAnchor="end">Readiness</text>
+                        {!hasCompletedAnalysis && <text x="100" y="105" fill="#64748B" fontSize="9" textAnchor="middle">Complete an analysis to view results</text>}
+                      </svg>
+
+                      {/* Legend */}
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-between text-[9px] text-slate-400 px-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-0.5 border-t-2 border-dashed border-primary"></span>
+                          <span>Job target requirements</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-accent/25 border border-accent"></span>
+                          <span>Your profile score</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Custom Area Chart Card */}
+                  <div className="glass-card stagger-card p-6 rounded-2xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-bold font-grotesk uppercase tracking-wider text-slate-300">Resume Analysis Progress</h4>
+                      <i data-lucide="info" className="w-4 h-4 text-slate-500"></i>
+                    </div>
+                    {/* SVG Line/Area implementation */}
+                    <div className="w-full h-64 flex items-center justify-center bg-black/20 rounded-xl p-4 relative">
+                      <svg width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none" className="overflow-visible">
+                        {/* Definitions for gradient fills */}
+                        <defs>
+                          <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#5B5FEF" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+                        {/* Grid lines */}
+                        <line x1="0" y1="50" x2="400" y2="50" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="1" />
+                        <line x1="0" y1="100" x2="400" y2="100" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="1" />
+                        <line x1="0" y1="150" x2="400" y2="150" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="1" />
+
+                        {/* Values progress from resume parsing to the final job match. */}
+                        {hasCompletedAnalysis && <polygon points={`${performanceLinePoints} 400,200 0,200`} fill="url(#chartGlow)" />}
+                        {hasCompletedAnalysis && <polyline points={performanceLinePoints} fill="none" stroke="#22D3EE" strokeWidth="3.5" />}
+                        {performanceValues.map((value, index) => {
+                          const x = index * 400 / 3;
+                          const y = 190 - value * 1.65;
+                          return <circle key={index} cx={x} cy={y} r="4.5" fill={index === 3 ? '#22D3EE' : '#5B5FEF'} stroke="#fff" strokeWidth="1.5" />;
+                        })}
+                        {!hasCompletedAnalysis && <text x="200" y="104" fill="#64748B" fontSize="11" textAnchor="middle">Upload and analyze a resume to view progress</text>}
+                      </svg>
+
+                      {/* Timeline Indicators */}
+                      <div className="absolute bottom-2 left-6 right-6 flex justify-between text-[9px] text-slate-500">
+                        <span>Jan</span>
+                        <span>Mar</span>
+                        <span>May</span>
+                        <span>Jul</span>
+                        <span>Sep</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Free Resources Section (shows after scan OR always with defaults) */}
+                <div className="stagger-card">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <div className="text-xs font-bold font-grotesk uppercase tracking-widest text-primary mb-1">Free Learning Resources</div>
+                      <h3 className="text-xl font-bold font-grotesk text-slate-100">
+                        Curated for Your <span className="text-accent">Skill Gaps</span>
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {missingSkills.length > 0
+                          ? `${missingSkills.length} missing skill${missingSkills.length > 1 ? 's' : ''} detected. Here are the best free resources to close each gap:`
+                          : 'Paste your job description and run an analysis to get personalized resources. Showing popular picks meanwhile.'}
+                      </p>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-xl border border-success/25 bg-success/5 text-success text-xs font-semibold">
+                      <i data-lucide="sparkles" className="w-4 h-4"></i>
+                      100% Free
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {(missingSkills.length > 0 ? missingSkills : ['Docker', 'Kubernetes', 'AWS']).map((skill, si) => {
+                      const resources = RESOURCE_DB[skill] || [
+                        { title: `Learn ${skill} â€“ Search YouTube`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent('learn ' + skill + ' full course free')}`, type: 'Video', icon: 'play-circle' },
+                        { title: `${skill} Documentation`, url: `https://www.google.com/search?q=${encodeURIComponent(skill + ' official documentation')}`, type: 'Documentation', icon: 'book-open' },
+                      ];
+                      const typeColors = {
+                        'Documentation': { bg: 'bg-primary/10', border: 'border-primary/25', text: 'text-primary' },
+                        'Video':         { bg: 'bg-rose-500/10', border: 'border-rose-500/25', text: 'text-rose-400' },
+                        'Course':        { bg: 'bg-amber-500/10', border: 'border-amber-500/25', text: 'text-amber-400' },
+                        'Interactive':   { bg: 'bg-accent/10', border: 'border-accent/25', text: 'text-accent' },
+                        'Practice':      { bg: 'bg-success/10', border: 'border-success/25', text: 'text-success' },
+                      };
+                      return (
+                        <div id={`resources-${skill}`} key={skill} className={`glass-card rounded-2xl p-6 ${selectedSkill === skill ? `ring-1 ring-accent/70` : ``}`} style={{ animationDelay: `${si * 0.05}s` }}>
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="w-9 h-9 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-center text-danger flex-shrink-0">
+                              <i data-lucide="target" className="w-4 h-4"></i>
+                            </div>
+                            <div>
+                              <div className="text-base font-bold font-grotesk text-slate-100">{skill}</div>
+                              <div className="text-xs text-slate-500">Missing from your profile â€” {resources.length} free resource{resources.length !== 1 ? 's' : ''} below</div>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {resources.map((res, ri) => {
+                              const colors = typeColors[res.type] || typeColors['Documentation'];
+                              return (
+                                <a
+                                  key={ri}
+                                  href={res.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="group flex items-start gap-3 p-4 rounded-xl bg-black/20 border border-cardBorder hover:border-accent/30 hover:bg-accent/5 transition-all duration-300 hover:scale-[1.01] cursor-pointer"
+                                >
+                                  <div className={`w-8 h-8 rounded-lg ${colors.bg} border ${colors.border} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110`}>
+                                    <i data-lucide={res.icon} className={`w-4 h-4 ${colors.text}`}></i>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-semibold text-slate-200 line-clamp-2 group-hover:text-accent transition-colors">{res.title}</div>
+                                    <div className={`mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${colors.bg} ${colors.text} border ${colors.border}`}>
+                                      {res.type}
+                                    </div>
+                                  </div>
+                                  <i data-lucide="external-link" className="w-3.5 h-3.5 text-slate-600 flex-shrink-0 group-hover:text-accent transition-colors mt-0.5"></i>
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* FOOTER */}
+              <footer className="py-6 border-t border-cardBorder text-center text-xs text-slate-500 bg-[#09090B]/60 backdrop-blur-md">
+                <p>© 2026 ResuGO · High Fidelity Career Intelligence Portal · Apple Minimalist Styling</p>
+              </footer>
+
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    // Render the React application
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+    // Initialize Lucide Icons after React mounts
+    setTimeout(() => {
+      lucide.createIcons();
+    }, 1000);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

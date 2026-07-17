@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResuGO · Resume Builder</title>
+  <meta name="description" content="Build a stunning resume in minutes. Live preview, smart tips, and curated free learning resources." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #09090B;
+      --card:      rgba(255,255,255,0.035);
+      --border:    rgba(255,255,255,0.08);
+      --primary:   #5B5FEF;
+      --accent:    #22D3EE;
+      --success:   #22C55E;
+      --danger:    #EF4444;
+      --amber:     #F59E0B;
+      --rose:      #F43F5E;
+      --text:      #E2E8F0;
+      --muted:     #64748B;
+      --radius:    16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ORBS ─────────────────────────────── */
+    .bg-orbs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(120px); opacity: 0.18;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 600px; height: 600px; background: var(--primary); top: -200px; left: -200px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: var(--accent);  bottom: -150px; right: -150px; animation-delay: -4s; }
+    .orb-3 { width: 400px; height: 400px; background: #8B5CF6;        top: 40%; left: 40%; animation-delay: -8s; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(40px, 30px) scale(1.08); } }
+
+    /* ── LAYOUT ──────────────────────────────────────── */
+    .wrapper { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* ── HEADER ──────────────────────────────────────── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 28px; margin-bottom: 40px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; backdrop-filter: blur(20px);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff; font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; box-shadow: 0 0 20px rgba(91,95,239,0.4);
+    }
+    .logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px;
+      background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .badge { padding: 6px 14px; border-radius: 50px; border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; }
+
+    /* ── PAGE TITLE ──────────────────────────────────── */
+    .page-title { text-align: center; margin-bottom: 48px; }
+    .page-title .eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px;
+    }
+    .page-title h1 {
+      font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 4vw, 48px);
+      font-weight: 700; color: #fff; line-height: 1.15;
+    }
+    .page-title h1 span {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .page-title p { color: var(--muted); font-size: 15px; margin-top: 12px; }
+
+    /* ── GLASS CARD ──────────────────────────────────── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); backdrop-filter: blur(20px);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .card:hover { border-color: rgba(91,95,239,0.25); box-shadow: 0 0 40px rgba(91,95,239,0.06); }
+
+    /* ── BUILDER GRID ────────────────────────────────── */
+    .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 48px; }
+    @media (max-width: 900px) { .builder-grid { grid-template-columns: 1fr; } }
+
+    /* ── FORM PANEL ──────────────────────────────────── */
+    .form-panel { padding: 32px; }
+    .panel-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700;
+      color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;
+    }
+    .panel-title .icon-badge {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+
+    .field-group { margin-bottom: 20px; }
+    .field-group label {
+      display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .field-group input,
+    .field-group textarea,
+    .field-group select {
+      width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Inter', sans-serif;
+      font-size: 14px; outline: none; transition: border-color 0.25s, box-shadow 0.25s;
+      resize: vertical;
+    }
+    .field-group input:focus,
+    .field-group textarea:focus,
+    .field-group select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,211,238,0.1);
+    }
+    .field-group textarea { min-height: 90px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+
+    .section-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 28px 0 20px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent);
+    }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* Skills tag input */
+    .skills-input-wrapper {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; transition: border-color 0.25s, box-shadow 0.25s;
+      min-height: 50px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;
+      cursor: text;
+    }
+    .skills-input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,211,238,0.1); }
+    .skill-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px 4px 12px; border-radius: 6px;
+      background: rgba(91,95,239,0.15); border: 1px solid rgba(91,95,239,0.3);
+      color: #a5b4fc; font-size: 12px; font-weight: 600;
+      animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .skill-tag button {
+      background: none; border: none; color: #818cf8; cursor: pointer; font-size: 14px;
+      line-height: 1; padding: 0; transition: color 0.2s;
+    }
+    .skill-tag button:hover { color: var(--danger); }
+    .skills-real-input {
+      flex: 1; min-width: 80px; background: transparent; border: none; outline: none;
+      color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; padding: 4px 0;
+    }
+    .skills-hint { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+    /* Generate button */
+    .btn-generate {
+      width: 100%; padding: 15px; border-radius: 12px; border: none; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff; margin-top: 8px; position: relative; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(91,95,239,0.3);
+    }
+    .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(91,95,239,0.45); }
+    .btn-generate:active { transform: translateY(0); }
+    .btn-generate::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: translateX(-100%); transition: transform 0.5s ease;
+    }
+    .btn-generate:hover::after { transform: translateX(100%); }
+
+    /* ── PREVIEW PANEL ───────────────────────────────── */
+    .preview-panel {
+      padding: 32px; position: relative; overflow: hidden;
+    }
+    .preview-panel::before {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 80% 20%, rgba(34,211,238,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .preview-content { position: relative; z-index: 1; }
+
+    /* Resume document */
+    .resume-doc {
+      background: #ffffff; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5); min-height: 380px;
+      animation: fadeSlideUp 0.5s ease;
+    }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .resume-header-bar {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      padding: 28px 32px 24px; color: #fff;
+    }
+    .resume-name { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .resume-contact { font-size: 12px; color: rgba(255,255,255,0.7); display: flex; flex-wrap: wrap; gap: 12px; }
+    .resume-contact span::before { content: '• '; opacity: 0.5; }
+    .resume-contact span:first-child::before { content: ''; }
+
+    .resume-body { padding: 24px 32px; color: #1e293b; }
+    .resume-section { margin-bottom: 20px; }
+    .resume-section-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase; color: #4f46e5;
+      border-bottom: 2px solid #e0e7ff; padding-bottom: 6px; margin-bottom: 12px;
+    }
+    .resume-section p { font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-line; }
+    .resume-skills-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+    .resume-skill-chip {
+      padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 600;
+      background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd;
+    }
+
+    .empty-preview {
+      min-height: 380px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px; text-align: center;
+    }
+    .empty-icon { font-size: 48px; opacity: 0.4; }
+    .empty-text { color: var(--muted); font-size: 14px; }
+
+    /* Download button */
+    .btn-download {
+      display: flex; align-items: center; gap: 8px; justify-content: center;
+      width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04); color: var(--text); cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      margin-top: 16px; transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-download:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+
+    /* ── FREE RESOURCES SECTION ──────────────────────── */
+    .resources-section { margin-top: 16px; }
+    .resources-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+    }
+    .resources-header-left .eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 8px;
+    }
+    .resources-header-left h2 {
+      font-family: 'Space Grotesk', sans-serif; font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700; color: #fff;
+    }
+    .resources-header-left h2 span {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .resources-header-left p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+    .free-badge {
+      display: flex; align-items: center; gap: 8px; padding: 10px 20px;
+      border-radius: 50px; border: 1px solid rgba(34,197,94,0.3);
+      background: rgba(34,197,94,0.07); color: var(--success);
+      font-size: 13px; font-weight: 700; white-space: nowrap;
+    }
+
+    /* Category tabs */
+    .category-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+    .cat-tab {
+      padding: 8px 18px; border-radius: 50px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .cat-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .cat-tab.active {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-color: transparent; color: #fff;
+    }
+
+    /* Resources grid */
+    .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+    .resource-card {
+      padding: 24px; border-radius: var(--radius);
+      background: var(--card); border: 1px solid var(--border);
+      backdrop-filter: blur(20px); text-decoration: none;
+      display: flex; flex-direction: column; gap: 16px;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .resource-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .resource-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(91,95,239,0.35);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 0 1px rgba(91,95,239,0.1);
+    }
+    .resource-card:hover::before { opacity: 1; }
+
+    .resource-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .resource-icon-wrap {
+      width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .resource-type-badge {
+      padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+    }
+    .type-video       { background: rgba(244,63,94,0.15); color: #fb7185; border: 1px solid rgba(244,63,94,0.25); }
+    .type-course      { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+    .type-interactive { background: rgba(34,211,238,0.12); color: var(--accent); border: 1px solid rgba(34,211,238,0.25); }
+    .type-doc         { background: rgba(91,95,239,0.12); color: #a5b4fc; border: 1px solid rgba(91,95,239,0.25); }
+    .type-tool        { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
+
+    .resource-info h3 { color: #fff; font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 6px; }
+    .resource-info p  { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .resource-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border); padding-top: 14px;
+    }
+    .resource-provider { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .resource-arrow { font-size: 18px; color: var(--muted); transition: transform 0.2s, color 0.2s; }
+    .resource-card:hover .resource-arrow { transform: translate(3px, -3px); color: var(--accent); }
+
+    /* ── STATS BAR ───────────────────────────────────── */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 700px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card {
+      padding: 20px; border-radius: var(--radius); text-align: center;
+      background: var(--card); border: 1px solid var(--border); backdrop-filter: blur(20px);
+    }
+    .stat-num {
+      font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #1e293b; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 24px; font-size: 13px; font-weight: 600; color: var(--success);
+      display: flex; align-items: center; gap: 10px; z-index: 1000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="wrapper">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">R</div>
+        <div class="logo-text">ResuGO</div>
+      </div>
+      <div class="badge">Resume Builder · Free</div>
+    </header>
+
+    <!-- PAGE TITLE -->
+    <div class="page-title">
+      <div class="eyebrow">✦ Build · Preview · Download</div>
+      <h1>Craft a <span>Career-Winning</span> Resume</h1>
+      <p>Fill in your details, instantly preview your resume, and learn from top free resources below.</p>
+    </div>
+
+    <!-- BUILDER + PREVIEW GRID -->
+    <div class="builder-grid">
+
+      <!-- FORM PANEL -->
+      <div class="card form-panel">
+        <div class="panel-title">
+          <div class="icon-badge">📝</div>
+          Your Information
+        </div>
+
+        <form id="resumeForm" autocomplete="off">
+
+          <div class="section-divider">Personal Details</div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" placeholder="e.g. Alex Johnson" />
+            </div>
+            <div class="field-group">
+              <label for="jobtitle">Job Title</label>
+              <input type="text" id="jobtitle" placeholder="e.g. Full Stack Developer" />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="alex@example.com" />
+            </div>
+            <div class="field-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" placeholder="+1 (555) 000-0000" />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="San Francisco, CA" />
+            </div>
+            <div class="field-group">
+              <label for="linkedin">LinkedIn / Portfolio</label>
+              <input type="text" id="linkedin" placeholder="linkedin.com/in/alex" />
+            </div>
+          </div>
+
+          <div class="section-divider">Summary &amp; Experience</div>
+
+          <div class="field-group">
+            <label for="summary">Professional Summary</label>
+            <textarea id="summary" rows="3" placeholder="A brief 2-3 sentence professional bio..."></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="experience">Work Experience</label>
+            <textarea id="experience" rows="4" placeholder="Company · Role · Dates&#10;• Achievement one&#10;• Achievement two"></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="education">Education</label>
+            <textarea id="education" rows="2" placeholder="B.S. Computer Science · MIT · 2020-2024"></textarea>
+          </div>
+
+          <div class="section-divider">Skills</div>
+
+          <div class="field-group">
+            <label>Skills (press Enter to add)</label>
+            <div class="skills-input-wrapper" id="skillsWrapper">
+              <input type="text" class="skills-real-input" id="skillInput" placeholder="Type a skill and press Enter…" />
+            </div>
+            <div class="skills-hint">💡 Example: React, Node.js, Python, Docker, Figma</div>
+          </div>
+
+          <button type="button" class="btn-generate" onclick="generatePreview()">
+            ✨ Generate Live Preview
+          </button>
+        </form>
+      </div>
+
+      <!-- PREVIEW PANEL -->
+      <div class="card preview-panel">
+        <div class="panel-title" style="margin-bottom: 20px;">
+          <div class="icon-badge">👁️</div>
+          Live Preview
+        </div>
+        <div class="preview-content" id="previewContent">
+          <div class="empty-preview">
+            <div class="empty-icon">📄</div>
+            <div class="empty-text">Fill in your details and click<br><strong style="color: #a5b4fc;">Generate Live Preview</strong></div>
+          </div>
+        </div>
+        <button class="btn-download" id="downloadBtn" style="display:none;" onclick="downloadResume()">
+          ⬇️ Download as PDF
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FREE RESOURCES SECTION -->
+    <section class="resources-section" id="resources">
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-num">30+</div>
+          <div class="stat-label">Free Resources</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Always Free</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">6</div>
+          <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">0₹</div>
+          <div class="stat-label">No Sign-up Needed</div>
+        </div>
+      </div>
+
+      <div class="resources-header">
+        <div class="resources-header-left">
+          <div class="eyebrow">✦ Curated Picks</div>
+          <h2>Free Resources to <span>Level Up</span></h2>
+          <p>Everything you need to build skills, ace interviews, and land the job — completely free.</p>
+        </div>
+        <div class="free-badge">✅ 100% Free · No Credit Card</div>
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="category-tabs" id="categoryTabs">
+        <button class="cat-tab active" data-cat="all" onclick="filterResources('all', this)">All</button>
+        <button class="cat-tab" data-cat="resume" onclick="filterResources('resume', this)">📄 Resume Writing</button>
+        <button class="cat-tab" data-cat="interview" onclick="filterResources('interview', this)">🎤 Interviews</button>
+        <button class="cat-tab" data-cat="portfolio" onclick="filterResources('portfolio', this)">🌐 Portfolio</button>
+        <button class="cat-tab" data-cat="skills" onclick="filterResources('skills', this)">💻 Technical Skills</button>
+        <button class="cat-tab" data-cat="job" onclick="filterResources('job', this)">🔍 Job Hunting</button>
+        <button class="cat-tab" data-cat="softskills" onclick="filterResources('softskills', this)">🧠 Soft Skills</button>
+      </div>
+
+      <!-- Resources Grid -->
+      <div class="resources-grid" id="resourcesGrid"></div>
+    </section>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">✅ Resume preview generated!</div>
+
+  <script>
+    // ═══════════════════════════════════════════════
+    //  SKILLS TAG INPUT
+    // ═══════════════════════════════════════════════
+    const skills = [];
+    const skillInput = document.getElementById('skillInput');
+    const skillsWrapper = document.getElementById('skillsWrapper');
+
+    skillInput.addEventListener('keydown', function(e) {
+      if ((e.key === 'Enter' || e.key === ',') && skillInput.value.trim()) {
+        e.preventDefault();
+        addSkill(skillInput.value.trim().replace(/,/g, ''));
+        skillInput.value = '';
+      }
+      if (e.key === 'Backspace' && !skillInput.value && skills.length) {
+        removeSkill(skills.length - 1);
+      }
+    });
+    skillsWrapper.addEventListener('click', function() { skillInput.focus(); });
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+    }
+
+    function addSkill(name) {
+      if (!name || skills.includes(name)) return;
+      skills.push(name);
+      renderSkillTags();
+    }
+
+    function removeSkill(idx) {
+      skills.splice(idx, 1);
+      renderSkillTags();
+    }
+
+    function renderSkillTags() {
+      document.querySelectorAll('.skill-tag').forEach(function(t) { t.remove(); });
+      skills.forEach(function(s, i) {
+        const tag = document.createElement('span');
+        tag.className = 'skill-tag';
+        const btn = document.createElement('button');
+        btn.title = 'Remove';
+        btn.textContent = '×';
+        btn.addEventListener('click', function(e) { e.stopPropagation(); removeSkill(i); });
+        tag.appendChild(document.createTextNode(s));
+        tag.appendChild(btn);
+        skillsWrapper.insertBefore(tag, skillInput);
+      });
+    }
+
+    // ═══════════════════════════════════════════════
+    //  RESUME PREVIEW GENERATOR
+    // ═══════════════════════════════════════════════
+    function generatePreview() {
+      const name       = esc(document.getElementById('name').value.trim())       || 'Your Name';
+      const jobtitle   = esc(document.getElementById('jobtitle').value.trim())   || '';
+      const email      = esc(document.getElementById('email').value.trim())      || '';
+      const phone      = esc(document.getElementById('phone').value.trim())      || '';
+      const location   = esc(document.getElementById('location').value.trim())   || '';
+      const linkedin   = esc(document.getElementById('linkedin').value.trim())   || '';
+      const summary    = esc(document.getElementById('summary').value.trim())    || '';
+      const experience = esc(document.getElementById('experience').value.trim()) || '';
+      const education  = esc(document.getElementById('education').value.trim())  || '';
+
+      const contactItems = [email, phone, location, linkedin].filter(Boolean);
+
+      const skillChips = skills.length
+        ? skills.map(function(s) { return '<span class="resume-skill-chip">' + esc(s) + '</span>'; }).join('')
+        : '<span style="color:#94a3b8;font-size:13px;">No skills added yet.</span>';
+
+      document.getElementById('previewContent').innerHTML =
+        '<div class="resume-doc" id="resumeDoc">' +
+          '<div class="resume-header-bar">' +
+            '<div class="resume-name">' + name + '</div>' +
+            (jobtitle ? '<div style="color:rgba(255,255,255,0.8);font-size:14px;margin-bottom:10px;font-weight:500;">' + jobtitle + '</div>' : '') +
+            '<div class="resume-contact">' +
+              contactItems.map(function(c) { return '<span>' + c + '</span>'; }).join('') +
+            '</div>' +
+          '</div>' +
+          '<div class="resume-body">' +
+            (summary
+              ? '<div class="resume-section"><div class="resume-section-title">Professional Summary</div><p>' + summary + '</p></div>'
+              : '') +
+            (experience
+              ? '<div class="resume-section"><div class="resume-section-title">Work Experience</div><p>' + experience + '</p></div>'
+              : '') +
+            (education
+              ? '<div class="resume-section"><div class="resume-section-title">Education</div><p>' + education + '</p></div>'
+              : '') +
+            '<div class="resume-section">' +
+              '<div class="resume-section-title">Skills</div>' +
+              '<div class="resume-skills-wrap">' + skillChips + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('downloadBtn').style.display = 'flex';
+      showToast('✅ Resume preview generated!');
+
+      // Scroll to resources after short delay
+      setTimeout(function() {
+        document.getElementById('resources').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 900);
+    }
+
+    function downloadResume() {
+      showToast('🖨️ Press Ctrl+P (or Cmd+P) → "Save as PDF" to download your resume!');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 3200);
+    }
+
+    // ═══════════════════════════════════════════════
+    //  FREE RESOURCES DATA
+    // ═══════════════════════════════════════════════
+    const RESOURCES = [
+      // ── RESUME WRITING ──────────────────────────
+      {
+        cat: 'resume', emoji: '📝', iconBg: 'rgba(91,95,239,0.15)',
+        type: 'doc', typeLabel: 'Guide',
+        title: 'Harvard OCS Resume Guide',
+        desc: 'Step-by-step resume writing guide from Harvard\'s Office of Career Services. Covers formatting, wording, and ATS tips.',
+        provider: 'Harvard University',
+        url: 'https://ocs.fas.harvard.edu/resumes-cvs'
+      },
+      {
+        cat: 'resume', emoji: '🎬', iconBg: 'rgba(244,63,94,0.15)',
+        type: 'video', typeLabel: 'Video',
+        title: 'How to Write a Resume That Gets Interviews',
+        desc: 'Jeff Su\'s viral YouTube guide to crafting a data-driven resume with no prior experience.',
+        provider: 'Jeff Su · YouTube',
+        url: 'https://www.youtube.com/watch?v=y8YH0Qbu5h4'
+      },
+      {
+        cat: 'resume', emoji: '🛠️', iconBg: 'rgba(34,197,94,0.15)',
+        type: 'tool', typeLabel: 'Tool',
+        title: 'Overleaf LaTeX Resume Templates',
+        desc: 'Professional LaTeX resume templates used by engineers at top companies. Free and editable.',
+        provider: 'Overleaf',
+        url: 'https://www.overleaf.com/gallery/tagged/cv'
+      },
+      {
+        cat: 'resume', emoji: '✅', iconBg: 'rgba(245,158,11,0.15)',
+        type: 'tool', typeLabel: 'Checker',
+        title: 'Resume Worded — Free ATS Checker',
+        desc: 'Upload your resume and get instant AI feedback on ATS score, action verbs, and formatting.',
+        provider: 'Resume Worded',
+        url: 'https://resumeworded.com/'
+      },
+      {
+        cat: 'resume', emoji: '📄', iconBg: 'rgba(91,95,239,0.15)',
+        type: 'doc', typeLabel: 'Template',
+        title: 'Google Docs Resume Templates',
+        desc: '20+ free, ATS-friendly resume templates available directly inside Google Docs.',
+        provider: 'Google',
+        url: 'https://docs.google.com/templates'
+      },
+
+      // ── INTERVIEW PREP ───────────────────────────
+      {
+        cat: 'interview', emoji: '🎤', iconBg: 'rgba(244,63,94,0.15)',
+        type: 'video', typeLabel: 'Video',
+        title: '50 Common Interview Questions & Answers',
+        desc: 'Full mock interview prep covering STAR method, behavioral questions, and technical HR rounds.',
+        provider: 'Don Georgevich · YouTube',
+        url: 'https://www.youtube.com/watch?v=KukmClH1KoA'
+      },
+      {
+        cat: 'interview', emoji: '💻', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Practice',
+        title: 'Pramp — Free Mock Interviews',
+        desc: 'Practice coding and behavioral interviews with peers for free. Real-time feedback included.',
+        provider: 'Pramp',
+        url: 'https://www.pramp.com/'
+      },
+      {
+        cat: 'interview', emoji: '🧩', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Practice',
+        title: 'LeetCode — Interview Questions',
+        desc: '2500+ algorithm and data structure problems with solutions. Practice at your own pace.',
+        provider: 'LeetCode',
+        url: 'https://leetcode.com/'
+      },
+      {
+        cat: 'interview', emoji: '📖', iconBg: 'rgba(91,95,239,0.15)',
+        type: 'doc', typeLabel: 'Guide',
+        title: 'Tech Interview Handbook',
+        desc: 'The definitive open-source guide for software engineering interviews. Covers DSA, system design, and behavioral.',
+        provider: 'Yangshun Tay · GitHub',
+        url: 'https://www.techinterviewhandbook.org/'
+      },
+      {
+        cat: 'interview', emoji: '🗣️', iconBg: 'rgba(244,63,94,0.15)',
+        type: 'video', typeLabel: 'Video',
+        title: 'Tell Me About Yourself — Best Answer',
+        desc: 'Master the most common interview opener with this concise, high-impact framework.',
+        provider: 'Self Made Millennial · YouTube',
+        url: 'https://www.youtube.com/watch?v=kayOhGRcNt4'
+      },
+
+      // ── PORTFOLIO ────────────────────────────────
+      {
+        cat: 'portfolio', emoji: '🌐', iconBg: 'rgba(34,197,94,0.15)',
+        type: 'tool', typeLabel: 'Builder',
+        title: 'GitHub Pages — Free Portfolio Hosting',
+        desc: 'Host your personal portfolio site for free using GitHub Pages. Perfect for developers.',
+        provider: 'GitHub',
+        url: 'https://pages.github.com/'
+      },
+      {
+        cat: 'portfolio', emoji: '🎨', iconBg: 'rgba(34,197,94,0.15)',
+        type: 'tool', typeLabel: 'Tool',
+        title: 'Behance — Creative Portfolio',
+        desc: 'Showcase your design, illustration, or creative work for free to 50M+ viewers.',
+        provider: 'Adobe Behance',
+        url: 'https://www.behance.net/'
+      },
+      {
+        cat: 'portfolio', emoji: '🎬', iconBg: 'rgba(244,63,94,0.15)',
+        type: 'video', typeLabel: 'Video',
+        title: 'Build a Portfolio Website from Scratch',
+        desc: 'Full HTML/CSS/JS tutorial to build a stunning developer portfolio without any frameworks.',
+        provider: 'Kevin Powell · YouTube',
+        url: 'https://www.youtube.com/watch?v=_xkSvufmjEs'
+      },
+      {
+        cat: 'portfolio', emoji: '📝', iconBg: 'rgba(91,95,239,0.15)',
+        type: 'doc', typeLabel: 'Guide',
+        title: 'What to Include in a Dev Portfolio',
+        desc: 'Curated checklist of what hiring managers actually look for in developer portfolios.',
+        provider: 'freeCodeCamp',
+        url: 'https://www.freecodecamp.org/news/what-to-put-on-a-software-engineering-resume/'
+      },
+
+      // ── TECHNICAL SKILLS ─────────────────────────
+      {
+        cat: 'skills', emoji: '🐍', iconBg: 'rgba(245,158,11,0.15)',
+        type: 'course', typeLabel: 'Course',
+        title: 'CS50P — Python by Harvard (Free)',
+        desc: 'Harvard\'s famous intro-to-Python course. Earn a certificate for free after completing all problem sets.',
+        provider: 'Harvard edX',
+        url: 'https://cs50.harvard.edu/python/'
+      },
+      {
+        cat: 'skills', emoji: '⚛️', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Interactive',
+        title: 'Scrimba — Learn React for Free',
+        desc: 'Hands-on React course with interactive browser-based coding. No setup needed.',
+        provider: 'Scrimba',
+        url: 'https://scrimba.com/learn/learnreact'
+      },
+      {
+        cat: 'skills', emoji: '🖥️', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Practice',
+        title: 'freeCodeCamp Full Curriculum',
+        desc: '3,000+ hours of free coding tutorials covering HTML, CSS, JS, Python, SQL, and more.',
+        provider: 'freeCodeCamp',
+        url: 'https://www.freecodecamp.org/learn'
+      },
+      {
+        cat: 'skills', emoji: '🗄️', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Interactive',
+        title: 'SQLZoo — Learn SQL Interactively',
+        desc: 'Browser-based SQL exercises from beginner to advanced. No installation required.',
+        provider: 'SQLZoo',
+        url: 'https://sqlzoo.net/'
+      },
+      {
+        cat: 'skills', emoji: '☁️', iconBg: 'rgba(245,158,11,0.15)',
+        type: 'course', typeLabel: 'Course',
+        title: 'Google Cloud Skills Boost (Free)',
+        desc: 'Official Google Cloud training with free monthly credits. Includes hands-on labs.',
+        provider: 'Google Cloud',
+        url: 'https://cloudskillsboost.google/'
+      },
+      {
+        cat: 'skills', emoji: '🐳', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Lab',
+        title: 'Play with Docker — Free Lab',
+        desc: 'A live Docker environment in your browser. Run containers and experiment for free.',
+        provider: 'Docker',
+        url: 'https://labs.play-with-docker.com/'
+      },
+      {
+        cat: 'skills', emoji: '🤖', iconBg: 'rgba(245,158,11,0.15)',
+        type: 'course', typeLabel: 'Course',
+        title: 'ML Crash Course — Google',
+        desc: 'Google\'s free machine learning course using TensorFlow APIs. No prior ML knowledge needed.',
+        provider: 'Google Developers',
+        url: 'https://developers.google.com/machine-learning/crash-course'
+      },
+
+      // ── JOB HUNTING ──────────────────────────────
+      {
+        cat: 'job', emoji: '🔍', iconBg: 'rgba(34,197,94,0.15)',
+        type: 'tool', typeLabel: 'Platform',
+        title: 'LinkedIn Jobs — Free Job Search',
+        desc: 'Search millions of jobs, get recruiter outreach, and optimize your LinkedIn profile to be found.',
+        provider: 'LinkedIn',
+        url: 'https://www.linkedin.com/jobs/'
+      },
+      {
+        cat: 'job', emoji: '📊', iconBg: 'rgba(34,197,94,0.15)',
+        type: 'tool', typeLabel: 'Research',
+        title: 'Levels.fyi — Salary Benchmarking',
+        desc: 'Real salary data from employees at top tech companies. Know your worth before negotiating.',
+        provider: 'Levels.fyi',
+        url: 'https://www.levels.fyi/'
+      },
+      {
+        cat: 'job', emoji: '🎬', iconBg: 'rgba(244,63,94,0.15)',
+        type: 'video', typeLabel: 'Video',
+        title: 'How to Negotiate Salary (Script Included)',
+        desc: 'Exact scripts and tactics for negotiating your job offer, raise, or freelance rate.',
+        provider: 'Ramit Sethi · YouTube',
+        url: 'https://www.youtube.com/watch?v=XY5SeCl_8NE'
+      },
+      {
+        cat: 'job', emoji: '📬', iconBg: 'rgba(91,95,239,0.15)',
+        type: 'doc', typeLabel: 'Template',
+        title: 'Cold Email Templates for Job Outreach',
+        desc: 'Copy-paste email templates for reaching out to hiring managers and growing your network.',
+        provider: 'HubSpot Blog',
+        url: 'https://blog.hubspot.com/sales/networking-email-templates'
+      },
+
+      // ── SOFT SKILLS ──────────────────────────────
+      {
+        cat: 'softskills', emoji: '🗣️', iconBg: 'rgba(245,158,11,0.15)',
+        type: 'course', typeLabel: 'Course',
+        title: 'Public Speaking — Coursera (Free Audit)',
+        desc: 'Learn to speak confidently, structure arguments, and handle Q&A sessions under pressure.',
+        provider: 'University of Washington',
+        url: 'https://www.coursera.org/learn/public-speaking'
+      },
+      {
+        cat: 'softskills', emoji: '🧠', iconBg: 'rgba(34,211,238,0.12)',
+        type: 'interactive', typeLabel: 'Practice',
+        title: 'Toastmasters International (Free Visit)',
+        desc: 'Join a local Toastmasters club for free as a guest. Improve communication and leadership.',
+        provider: 'Toastmasters',
+        url: 'https://www.toastmasters.org/find-a-club'
+      },
+      {
+        cat: 'softskills', emoji: '✍️', iconBg: 'rgba(91,95,239,0.15)',
+        type: 'doc', typeLabel: 'Guide',
+        title: 'The Elements of Style (Free PDF)',
+        desc: 'The classic guide to clear, concise, professional English writing by Strunk & White.',
+        provider: 'Bartleby.com',
+        url: 'https://www.bartleby.com/141/'
+      },
+      {
+        cat: 'softskills', emoji: '🎬', iconBg: 'rgba(244,63,94,0.15)',
+        type: 'video', typeLabel: 'TED Talk',
+        title: 'Your Body Language May Shape Who You Are',
+        desc: 'Amy Cuddy\'s famous TED talk on power poses and confidence — 60M+ views.',
+        provider: 'TED · Amy Cuddy',
+        url: 'https://www.ted.com/talks/amy_cuddy_your_body_language_may_shape_who_you_are'
+      },
+    ];
+
+    // ═══════════════════════════════════════════════
+    //  RENDER RESOURCES
+    // ═══════════════════════════════════════════════
+    let currentCat = 'all';
+
+    function filterResources(cat, btn) {
+      currentCat = cat;
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderResources();
+    }
+
+    // Subtle entrance animation observer
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    function renderResources() {
+      const grid = document.getElementById('resourcesGrid');
+      const filtered = currentCat === 'all' ? RESOURCES : RESOURCES.filter(function(r) { return r.cat === currentCat; });
+
+      if (!filtered.length) {
+        grid.innerHTML = '<p style="color:var(--muted);font-size:14px;text-align:center;padding:40px 0;">No resources in this category yet.</p>';
+        return;
+      }
+
+      const typeClass = { video: 'type-video', course: 'type-course', interactive: 'type-interactive', doc: 'type-doc', tool: 'type-tool' };
+
+      grid.innerHTML = filtered.map(function(r, i) {
+        return '<a href="' + r.url + '" target="_blank" rel="noopener noreferrer" class="resource-card" style="animation-delay:' + (i * 0.04) + 's">' +
+          '<div class="resource-card-top">' +
+            '<div class="resource-icon-wrap" style="background:' + r.iconBg + '">' + r.emoji + '</div>' +
+            '<div class="resource-type-badge ' + (typeClass[r.type] || 'type-doc') + '">' + r.typeLabel + '</div>' +
+          '</div>' +
+          '<div class="resource-info">' +
+            '<h3>' + r.title + '</h3>' +
+            '<p>' + r.desc + '</p>' +
+          '</div>' +
+          '<div class="resource-footer">' +
+            '<div class="resource-provider">' + r.provider + '</div>' +
+            '<div class="resource-arrow">↗</div>' +
+          '</div>' +
+        '</a>';
+      }).join('');
+
+      // Re-observe newly created cards for entrance animation
+      grid.querySelectorAll('.resource-card').forEach(function(card) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(card);
+      });
+    }
+
+    // Initial render on load
+    renderResources();
+  </script>
+
+</body>
+</html>
