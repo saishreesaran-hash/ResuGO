@@ -27,9 +27,10 @@ ResuGO bridges the gap between job seekers and Applicant Tracking Systems (ATS) 
 ​
 🎨 Glassmorphic Design: A premium, ultra-modern visual aesthetic built for optimal readability.
 
-​⚡ Fluid Motion: Powered by high-performance GSAP micro-interactions and smooth page transitions.
+​⚡Fluid Motion: Powered by high-performance GSAP micro-interactions and smooth page transitions.
 ​
-🔓 Frictionless Demo: Includes a dedicated Guest Demo Mode to explore the dashboard instantly.
+
+🔓Frictionless Demo: Includes a dedicated Guest Demo Mode to explore the dashboard instantly.
 
 
 ●​Career Optimization Features
